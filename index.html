@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>臻辉班 - 班级纪念册</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #c9a84c;
+    --dark: #1a1a2e;
+    --cream: #fdf8f0;
+    --text: #333;
+    --light-gold: #e8d5a3;
+  }
+
+  body {
+    font-family: 'Noto Serif SC', serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 顶部状态栏 */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .status-time { font-size: 14px; font-weight: 600; }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .signal-bar { display: flex; gap: 2px; align-items: flex-end; height: 14px; }
+  .signal-bar span { width: 3px; background: #333; border-radius: 1px; }
+  .signal-bar span:nth-child(1) { height: 4px; }
+  .signal-bar span:nth-child(2) { height: 6px; }
+  .signal-bar span:nth-child(3) { height: 8px; }
+  .signal-bar span:nth-child(4) { height: 10px; }
+  .battery { width: 22px; height: 11px; border: 1.5px solid #333; border-radius: 3px; position: relative; display: flex; align-items: center; padding: 1px; }
+  .battery::after { content: ''; position: absolute; right: -3px; width: 2px; height: 5px; background: #333; border-radius: 0 1px 1px 0; }
+  .battery-fill { width: 70%; height: 100%; background: #333; border-radius: 1px; }
+
+  /* 主标题区 */
+  .hero {
+    text-align: center;
+    padding: 40px 20px 20px;
+    background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .class-name {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--dark);
+    letter-spacing: 8px;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 0px rgba(201,168,76,0.2);
+  }
+  .motto {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 22px;
+    color: #555;
+    line-height: 2;
+    margin-bottom: 20px;
+  }
+  .signature {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 28px;
+    color: var(--gold);
+    text-align: right;
+    padding-right: 40px;
+    margin-top: 10px;
+  }
+  .divider-gold {
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+    margin: 20px auto;
+    border-radius: 1px;
+  }
+
+  /* 关于我们 */
+  .about-section {
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .about-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: 4px;
+  }
+  .about-sub {
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 6px;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  /* 相册 */
+  .gallery-section {
+    padding: 20px;
+  }
+  .gallery-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .gallery-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+  .gallery-sub {
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 2px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .gallery-item {
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4/3;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  .gallery-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .gallery-item:active {
+    transform: scale(0.97);
+  }
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    display: block;
+  }
+  .gallery-item.wide {
+    grid-column: span 2;
+    aspect-ratio: 16/9;
+  }
+  .gallery-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 30px 10px 10px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.5));
+    color: #fff;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .gallery-item:hover .gallery-overlay {
+    opacity: 1;
+  }
+
+  /* 祝福语区域 */
+  .blessings {
+    padding: 40px 20px;
+    text-align: center;
+    background: linear-gradient(180deg, var(--cream), #fff, var(--cream));
+  }
+  .blessing-line {
+    font-size: 16px;
+    line-height: 2.2;
+    color: #444;
+  }
+  .blessing-line.highlight {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    margin: 10px 0;
+  }
+  .blessing-year {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--dark);
+    margin: 20px 0;
+    letter-spacing: 4px;
+    text-shadow: 3px 3px 0px rgba(201,168,76,0.3);
+  }
+  .blessing-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .bless-tag {
+    padding: 6px 16px;
+    border: 1.5px solid var(--gold);
+    border-radius: 20px;
+    font-size: 14px;
+    color: var(--gold);
+    background: rgba(201,168,76,0.05);
+  }
+
+  /* 最佳回忆 */
+  .memory-section {
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .memory-title {
+    font-size: 14px;
+    color: #999;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .memory-class {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 10px 0;
+  }
+
+  /* 留言墙 */
+  .wall-section {
+    padding: 30px 20px 50px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  }
+  .wall-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .wall-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+  .wall-sub {
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+  }
+  .wall-input-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .wall-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.3s;
+    -webkit-appearance: none;
+  }
+  .wall-input:focus {
+    border-color: var(--gold);
+  }
+  .wall-btn {
+    padding: 12px 24px;
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+    -webkit-appearance: none;
+  }
+  .wall-btn:active {
+    background: #b8983a;
+    transform: scale(0.97);
+  }
+  .wall-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .wall-msg {
+    padding: 14px 16px;
+    background: #fafafa;
+    border-radius: 12px;
+    border-left: 3px solid var(--gold);
+    animation: slideIn 0.4s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .wall-msg-text {
+    font-size: 14px;
+    color: #444;
+    line-height: 1.6;
+    word-break: break-all;
+  }
+  .wall-msg-time {
+    font-size: 11px;
+    color: #bbb;
+    margin-top: 6px;
+  }
+
+  /* 底部 */
+  .footer {
+    text-align: center;
+    padding: 30px 20px 40px;
+    background: var(--dark);
+    color: #fff;
+  }
+  .footer-name {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    margin-bottom: 10px;
+  }
+  .footer-motto {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 16px;
+    color: var(--light-gold);
+    line-height: 2;
+  }
+  .footer-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    margin: 16px auto;
+  }
+  .footer-copy {
+    font-size: 11px;
+    color: #666;
+    margin-top: 10px;
+  }
+
+  /* 图片灯箱 */
+  .lightbox {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.92);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .lightbox.active { 
+    display: flex; 
+    opacity: 1;
+  }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+  .lightbox.active img {
+    transform: scale(1);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    width: 44px; height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.3s;
+    z-index: 1001;
+  }
+  .lightbox-close:active { background: rgba(255,255,255,0.3); }
+
+  /* 飘落花瓣装饰 */
+  .petal {
+    position: fixed;
+    top: -10px;
+    pointer-events: none;
+    z-index: 50;
+    animation: fall linear forwards;
+    opacity: 0.6;
+  }
+  @keyframes fall {
+    to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* 返回顶部 */
+  .back-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: var(--gold);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(201,168,76,0.3);
+    z-index: 99;
+  }
+  .back-top.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .back-top:active {
+    transform: scale(0.9);
+  }
+</style>
+</head>
+<body>
+
+<!-- 状态栏 -->
+<div class="status-bar">
+  <span class="status-time" id="clock">9:41</span>
+  <div class="status-icons">
+    <div class="signal-bar">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+      <path d="M8 0C4.5 0 1.5 2 0 5c1.5 3 4.5 5 8 5s6.5-2 8-5c-1.5-3-4.5-5-8-5z" stroke="#333" stroke-width="1.2" fill="none"/>
+      <circle cx="8" cy="5" r="2" stroke="#333" stroke-width="1.2" fill="none"/>
+    </svg>
+    <div class="battery"><div class="battery-fill"></div></div>
+  </div>
+</div>
+
+<!-- 主标题 -->
+<div class="hero">
+  <div class="class-name">臻辉班</div>
+  <div class="motto">
+    让努力成为一种常态<br>
+    让优秀成为一种习惯
+  </div>
+  <div class="signature">黄欢</div>
+  <div class="divider-gold"></div>
+</div>
+
+<!-- 关于我们 -->
+<div class="about-section">
+  <div class="about-title">关于我们</div>
+  <div class="about-sub">ABOUT US</div>
+</div>
+
+<!-- 相册 -->
+<div class="gallery-section">
+  <div class="gallery-header">
+    <div class="gallery-title">班级相册</div>
+    <div class="gallery-sub">/ PHOTOS</div>
+  </div>
+  <div class="gallery-grid" id="gallery">
+    <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800">
+      <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400" alt="班级合影">
+      <div class="gallery-overlay">班级合影 · 最珍贵的记忆</div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800">
+      <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400" alt="课堂学习">
+      <div class="gallery-overlay">课堂学习</div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800">
+      <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400" alt="校园活动">
+      <div class="gallery-overlay">校园活动</div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800">
+      <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=400" alt="操场训练">
+      <div class="gallery-overlay">操场训练</div>
+    </div>
+    <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800">
+      <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400" alt="集体活动">
+      <div class="gallery-overlay">集体活动 · 青春飞扬</div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1427504740706-49a3a8efd28c?w=800">
+      <img src="https://images.unsplash.com/photo-1427504740706-49a3a8efd28c?w=400" alt="毕业典礼">
+      <div class="gallery-overlay">毕业典礼</div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800">
+      <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400" alt="图书馆">
+      <div class="gallery-overlay">图书馆时光</div>
+    </div>
+    <div class="gallery-item" data-src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800">
+      <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400" alt="运动会">
+      <div class="gallery-overlay">运动会</div>
+    </div>
+    <div class="gallery-item wide" data-src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800">
+      <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400" alt="友谊">
+      <div class="gallery-overlay">友谊长存</div>
+    </div>
+  </div>
+</div>
+
+<!-- 祝福语 -->
+<div class="blessings">
+  <div class="blessing-line highlight">Splendid CLASS</div>
+  <div class="blessing-line" style="font-size:20px; color:var(--gold); margin-bottom:10px;">锦绣韶华</div>
+  <div class="blessing-line"><strong>不气馁，加油！！</strong></div>
+  <div class="blessing-line">三月月考代表不了什么</div>
+  <div class="blessing-line">祝你顺利</div>
+  <div class="blessing-line highlight">金榜题名</div>
+  <div class="blessing-line">新岁启封，华章再续！</div>
+  <div class="blessing-line">祝愿我们臻辉班全体同学：</div>
+  <div class="blessing-line"><strong>学业精进，前程似锦；愿我们的班级凝心聚力，再创辉煌！</strong></div>
+  <div class="blessing-line">新的一年，一起向未来！</div>
+
+  <div class="blessing-year">2026</div>
+
+  <div class="blessing-tags">
+    <span class="bless-tag">骐骥驰骋</span>
+    <span class="bless-tag">势不可挡</span>
+    <span class="bless-tag">平安喜乐</span>
+  </div>
+</div>
+
+<!-- 最佳回忆 -->
+<div class="memory-section">
+  <div class="memory-title">BEST MEMORY</div>
+  <div class="memory-class">臻辉班</div>
+  <div class="memory-title">最美好的回忆</div>
+</div>
+
+<!-- 留言墙 -->
+<div class="wall-section">
+  <div class="wall-header">
+    <div class="wall-title">班级纪念册留言墙</div>
+    <div class="wall-sub">发布你自己的记忆...</div>
+  </div>
+  <div class="wall-input-area">
+    <input type="text" class="wall-input" id="msgInput" placeholder="写下你的祝福与回忆..." maxlength="200">
+    <button class="wall-btn" onclick="postMessage()">发帖</button>
+  </div>
+  <div class="wall-messages" id="wallMessages">
+    <div class="wall-msg">
+      <div class="wall-msg-text">愿臻辉班的每一位同学都能实现自己的梦想，前程似锦！</div>
+      <div class="wall-msg-time">2026-01-15 14:32</div>
+    </div>
+    <div class="wall-msg">
+      <div class="wall-msg-text">三年同窗，一生情谊。臻辉班永远是最棒的！</div>
+      <div class="wall-msg-time">2026-01-14 09:15</div>
+    </div>
+    <div class="wall-msg">
+      <div class="wall-msg-text">感谢黄老师的辛勤付出，我们会继续努力的！</div>
+      <div class="wall-msg-time">2026-01-13 18:45</div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部 -->
+<div class="footer">
+  <div class="footer-name">臻辉班</div>
+  <div class="footer-motto">
+    让努力成为一种常态<br>
+    让优秀成为一种习惯
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-copy">班级纪念册 · 珍藏每一份美好</div>
+</div>
+
+<!-- 返回顶部 -->
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+
+<!-- 灯箱 -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-close" onclick="closeLightbox(event)">&times;</div>
+  <img src="" alt="" id="lightboxImg">
+</div>
+
+<script>
+  // 时钟更新
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = h + ':' + m;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // 滚动动画
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    observer.observe(item);
+  });
+
+  // 灯箱
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const src = item.dataset.src;
+      document.getElementById('lightboxImg').src = src;
+      const lb = document.getElementById('lightbox');
+      lb.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  function closeLightbox(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('lightbox')) closeLightbox();
+  });
+
+  // 留言墙
+  function postMessage() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text) {
+      input.style.borderColor = '#e74c3c';
+      setTimeout(() => input.style.borderColor = '#e0e0e0', 1000);
+      return;
+    }
+
+    const now = new Date();
+    const timeStr = now.getFullYear() + '-' + 
+      String(now.getMonth()+1).padStart(2,'0') + '-' + 
+      String(now.getDate()).padStart(2,'0') + ' ' + 
+      String(now.getHours()).padStart(2,'0') + ':' + 
+      String(now.getMinutes()).padStart(2,'0');
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'wall-msg';
+    msgDiv.innerHTML = `
+      <div class="wall-msg-text">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+      <div class="wall-msg-time">${timeStr}</div>
+    `;
+
+    const container = document.getElementById('wallMessages');
+    container.insertBefore(msgDiv, container.firstChild);
+    input.value = '';
+    msgDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  document.getElementById('msgInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') postMessage();
+  });
+
+  // 飘落花瓣效果
+  function createPetal() {
+    const petal = document.createElement('div');
+    petal.className = 'petal';
+    petal.innerHTML = '❀';
+    petal.style.left = Math.random() * 100 + 'vw';
+    petal.style.fontSize = (Math.random() * 14 + 10) + 'px';
+    petal.style.color = ['#e8d5a3', '#f0c0c0', '#d4a5a5', '#c9a84c'][Math.floor(Math.random() * 4)];
+    petal.style.animationDuration = (Math.random() * 4 + 4) + 's';
+    document.body.appendChild(petal);
+    setTimeout(() => petal.remove(), 8000);
+  }
+  setInterval(createPetal, 2500);
+
+  // 返回顶部
+  const backTop = document.getElementById('backTop');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      backTop.classList.add('show');
+    } else {
+      backTop.classList.remove('show');
+    }
+  });
+</script>
+
+</body>
+</html>
